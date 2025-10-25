@@ -2,15 +2,22 @@ package crud
 
 import (
 	"fmt"
-	"task-cli/structs"
+	"os"
+	"task-cli/constructors"
+	"task-cli/storage"
+	"task-cli/task"
 )
 
-func Create(desc string) ([]structs.Task, error) {
-	tasklist, err := structs.LoadData()
+func Create(file *os.File, desc string) ([]task.Task, error) {
+	_, err := file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+	tasklist, err := storage.LoadData(file)
 	if err != nil {
 		return nil, fmt.Errorf("error in loadfile")
 	}
-	t, err := structs.NewTask(desc)
+	t, err := constructors.NewTask(file, desc)
 	if err != nil {
 		return nil, fmt.Errorf("error in task creation")
 	}

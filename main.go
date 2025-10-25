@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 	"task-cli/crud"
-	"task-cli/structs"
+	"task-cli/storage"
 )
 
 const (
@@ -33,6 +33,13 @@ const (
 )
 
 func main() {
+	//open file
+	file, err := os.OpenFile("save.json", os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("error in file opening")
+	}
+	defer file.Close()
+
 	//flags
 	HelpPtr := flag.Bool("help", false, "a bool")
 	addTask := flag.String("add-task", "", "a string var")
@@ -53,7 +60,7 @@ func main() {
 			}
 			status = args[1]
 			if status == "todo" || status == "completed" || status == "in-progress" {
-				_, err = crud.UpdateTask(id, 2, status)
+				_, err = crud.UpdateTask(file, id, 2, status)
 				if err != nil {
 					fmt.Printf("Error in task editing: %s\n", err)
 				} else {
@@ -68,7 +75,7 @@ func main() {
 	}
 
 	if *delTask != 0 {
-		_, err := crud.DelTask(*delTask)
+		_, err := crud.DelTask(file, *delTask)
 		if err != nil {
 			fmt.Printf("Error when deliting: %s\n", err)
 		} else {
@@ -85,7 +92,7 @@ func main() {
 				fmt.Printf("Error in type convertation:%s\n", err)
 			}
 			status = args[1]
-			_, err = crud.UpdateTask(id, 1, status)
+			_, err = crud.UpdateTask(file, id, 1, status)
 			if err != nil {
 				fmt.Printf("Error in task editing: %s\n", err)
 			} else {
@@ -101,7 +108,7 @@ func main() {
 	}
 
 	if *addTask != "" {
-		_, err := crud.Create(*addTask)
+		_, err := crud.Create(file, *addTask)
 		if err != nil {
 			fmt.Printf("Error in task creation: %s\n", err)
 		} else {
@@ -110,7 +117,7 @@ func main() {
 	}
 
 	if *tasklist {
-		tasklist, err := structs.LoadData()
+		tasklist, err := storage.LoadData(file)
 		if err != nil {
 			fmt.Printf("Error in task loading: %s\n", err)
 		}
@@ -119,16 +126,16 @@ func main() {
 
 			switch args[0] {
 			case "todo":
+				fmt.Println("Todo list:")
 				for _, v := range tasklist {
 					if v.Status == "todo" {
-						fmt.Println("Todo list:")
 						fmt.Println(v)
 					}
 				}
 			case "in-progress":
+				fmt.Println("In-progress list:")
 				for _, v := range tasklist {
 					if v.Status == "in-progress" {
-						fmt.Println("In-progress list:")
 						fmt.Println(v)
 					}
 				}

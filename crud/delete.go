@@ -3,12 +3,13 @@ package crud
 import (
 	"fmt"
 	"os"
-	"task-cli/structs"
+	"task-cli/storage"
+	"task-cli/task"
 	"task-cli/tools"
 )
 
-func DelTask(id int) ([]structs.Task, error) {
-	tasklist, err := structs.LoadData()
+func DelTask(file *os.File, id int) ([]task.Task, error) {
+	tasklist, err := storage.LoadData(file)
 	if err != nil {
 		return nil, fmt.Errorf("error in load file")
 	}
@@ -26,11 +27,11 @@ func DelTask(id int) ([]structs.Task, error) {
 
 	tasklist = append(tasklist[:index], tasklist[index+1:]...)
 
-	_, err = os.OpenFile("save.json", os.O_RDWR|os.O_TRUNC, 0644)
+	file, err = os.OpenFile("save.json", os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("file cant be open")
 	}
-	err = structs.SaveAllData(tasklist)
+	err = storage.SaveAllData(file, tasklist)
 	if err != nil {
 		return nil, fmt.Errorf("can't save data")
 	}

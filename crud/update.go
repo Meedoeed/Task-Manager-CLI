@@ -3,7 +3,8 @@ package crud
 import (
 	"fmt"
 	"os"
-	"task-cli/structs"
+	"task-cli/storage"
+	"task-cli/task"
 	"task-cli/tools"
 )
 
@@ -12,8 +13,12 @@ const (
 	ChangeStatus = 2
 )
 
-func UpdateTask(id int, choice int, data any) ([]structs.Task, error) {
-	tasklist, err := structs.LoadData()
+func UpdateTask(file *os.File, id int, choice int, data any) ([]task.Task, error) {
+	_, err := file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+	tasklist, err := storage.LoadData(file)
 	if err != nil {
 		return nil, fmt.Errorf("error in load file")
 	}
@@ -25,7 +30,7 @@ func UpdateTask(id int, choice int, data any) ([]structs.Task, error) {
 			break
 		}
 	}
-	if id == -1 {
+	if index == -1 {
 		return nil, fmt.Errorf("id is not in list")
 	}
 
@@ -45,11 +50,13 @@ func UpdateTask(id int, choice int, data any) ([]structs.Task, error) {
 			return nil, fmt.Errorf("error in change status:%s", err)
 		}
 	}
-	_, err = os.OpenFile("save.json", os.O_RDWR|os.O_TRUNC, 0644)
+	file.Close()
+	file, err = os.OpenFile("save.json", os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("file cant be open")
 	}
-	err = structs.SaveAllData(tasklist)
+	defer file.Close()
+	err = storage.SaveAllData(file, tasklist)
 	if err != nil {
 		return nil, fmt.Errorf("save all data error")
 	}

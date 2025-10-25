@@ -1,8 +1,8 @@
 package tools
 
-import "task-cli/structs"
+import "task-cli/task"
 
-func GetIds(tasklist []structs.Task) []int {
+func GetIds(tasklist []task.Task) []int {
 	var idlist []int
 	for _, v := range tasklist {
 		idlist = append(idlist, v.Id)
